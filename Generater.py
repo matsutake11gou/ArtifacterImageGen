@@ -564,7 +564,7 @@ def generation(data):
 
             Base.paste(badge,(1843-i*45,533),mask=badge_mask)
 
-    Base.show()
+    # Base.show()
     Base.save(f'{cwd}/Image.png')
 
 
@@ -587,5 +587,5 @@ def pil_to_base64(img, format="jpeg"):
 
 
 
-
-generation(read_json('data.json'))
+if __name__ == '__main__':
+    generation(read_json('data.json'))
