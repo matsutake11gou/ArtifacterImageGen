@@ -3,3 +3,7 @@ data.json
 venv/
 .vscode/
 __pycache__
+Artifact/*
+character/*
+weapon/*
+!.gitkeep
