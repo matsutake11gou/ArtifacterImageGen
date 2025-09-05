@@ -1,9 +1,12 @@
 Image.png
 data.json
+update_list.json
 venv/
 .vscode/
 __pycache__
 Artifact/*
 character/*
+!character/空
+!character/蛍
 weapon/*
 !.gitkeep

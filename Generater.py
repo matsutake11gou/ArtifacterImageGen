@@ -6,6 +6,7 @@ import os
 import itertools
 from collections import Counter
 import base64
+from update_images import update_images
 
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -186,18 +187,26 @@ def read_json(path):
         data = json.load(f)
     return data
 
+
 def generation(data):
     #config
+    cwd = os.path.abspath(os.path.dirname(__file__))
+    config_font = lambda size : ImageFont.truetype(f'{cwd}/Assets/ja-jp.ttf',size)
+
     element = data.get('element')
 
     CharacterData :dict = data.get('Character')
     CharacterName : str = CharacterData.get('Name')
+    TravelerName : str = CharacterData.get('TravelerName')
     CharacterConstellations :int = CharacterData.get('Const')
     CharacterLevel : int = CharacterData.get('Level')
     FriendShip : int = CharacterData.get('Love')
     CharacterStatus : dict = CharacterData.get('Status')
     CharacterBase : dict = CharacterData.get('Base')
     CharacterTalent:dict = CharacterData.get('Talent')
+
+    CharacterCostume = CharacterData.get('CostumeId')
+    CostumeName = CharacterData.get('CostumeName')
 
     Weapon : dict = data.get('Weapon')
     WeaponName : str =Weapon.get('name')
@@ -220,22 +229,34 @@ def generation(data):
 
     ArtifactsData : dict = data.get('Artifacts')
 
+    CharacterImageName : str = CharacterName
+    # 旅人は元素によって参照先を変える
+    if TravelerName:
+        CharacterImageName += f'({element})'
+    CharacterImageDir : str = f'{cwd}/character/{CharacterImageName}'
 
-    cwd = os.path.abspath(os.path.dirname(__file__))
-    config_font = lambda size : ImageFont.truetype(f'{cwd}/Assets/ja-jp.ttf',size)
+    # 画像更新
+    update_images(
+        CharacterImageName,
+        CharacterCostume,
+        CostumeName,
+        WeaponName,
+        set([
+            artifact['type']
+            for artifact in ArtifactsData.values()
+        ]),
+    )
 
     Base = Image.open(f'{cwd}/Base/{element}.png')
 
-
     #キャラクター
-    CharacterCostume = CharacterData.get('Costume')
-    if CharacterName in ['蛍','空']:
-        CharacterImage = Image.open(f'{cwd}/character/{CharacterName}({element})/avatar.png').convert("RGBA")
+    if TravelerName:
+        CharacterImage = Image.open(f'{cwd}/character/{TravelerName}/avatar.png').convert("RGBA")
     else:
         if CharacterCostume:
-            CharacterImage = Image.open(f'{cwd}/character/{CharacterName}/{CharacterCostume}.png').convert("RGBA")
+            CharacterImage = Image.open(f'{CharacterImageDir}/{CharacterCostume}.png').convert("RGBA")
         else:
-            CharacterImage = Image.open(f'{cwd}/character/{CharacterName}/avatar.png').convert("RGBA")
+            CharacterImage = Image.open(f'{CharacterImageDir}/avatar.png').convert("RGBA")
 
 
 
@@ -282,7 +303,7 @@ def generation(data):
 
     for i,t in enumerate(['通常','スキル',"爆発"]):
         TalentPaste = Image.new("RGBA",TalentBase.size,(255,255,255,0))
-        Talent = Image.open(f'{cwd}/character/{CharacterName}/{t}.png').resize((50,50)).convert('RGBA')
+        Talent = Image.open(f'{CharacterImageDir}/{t}.png').resize((50,50)).convert('RGBA')
         TalentMask = Talent.copy()
         TalentPaste.paste(Talent,(TalentPaste.width//2-25,TalentPaste.height//2-25),mask=TalentMask)
 
@@ -301,7 +322,7 @@ def generation(data):
         if c > CharacterConstellations:
             CPaste.paste(Clock,(666,-10+c*93),mask=ClockMask)
         else:
-            CharaC = Image.open(f'{cwd}/character/{CharacterName}/{c}.png').convert("RGBA").resize((45,45))
+            CharaC = Image.open(f'{CharacterImageDir}/{c}.png').convert("RGBA").resize((45,45))
             CharaCPaste = Image.new("RGBA",CBase.size,(255,255,255,0))
             CharaCMask = CharaC.copy()
             CharaCPaste.paste(CharaC,(int(CharaCPaste.width/2)-25,int(CharaCPaste.height/2)-23),mask=CharaCMask)
@@ -586,6 +607,24 @@ def pil_to_base64(img, format="jpeg"):
     return img_str
 
 
+def test():
+    cwd = os.path.abspath(os.path.dirname(__file__))
+    input_path = f'{cwd}/character/空/avatar.png'
+    out_path = f'{cwd}/character/空/avatar_after.png'
+    image = Image.open(input_path)
+    canvas = Image.new('RGBA', size=(2048, 1024), color=(0, 0, 0, 0))
+    scale = 1
+    resized_image = image.resize(size=(int(image.width*scale), int(image.height*scale)))
+    point = (
+        int(canvas.width/2 - resized_image.width/2) - 50,
+        int(canvas.height/2 - resized_image.height/2),
+    )
+    print('paste')
+    canvas.paste(resized_image, point)
+    print('save')
+    canvas.save(out_path)
+
 
 if __name__ == '__main__':
+    # test()
     generation(read_json('data.json'))
