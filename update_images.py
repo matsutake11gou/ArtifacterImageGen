@@ -205,37 +205,44 @@ def get_chara_images(chara_data):
         for data in datas
         if data['name'] == '天賦'
     ][0]
-    talent_a = [
+    # talent_a = [
+    #     t_data['icon_url']
+    #     for t_data in talent['list']
+    #     if '通常攻撃' in t_data['key']
+    # ][0]
+    # talent_s = [
+    #     t_data['icon_url']
+    #     for t_data in talent['list']
+    #     if t_data['attributes'] is not None and
+    #         len(t_data['attributes']) > 0 and
+    #         len(t_data['attributes'][0]['values']) >= 13 and
+    #         not any([
+    #             attr['key'] == '元素エネルギー'
+    #             for attr in t_data['attributes']
+    #         ])
+    # ][0]
+    # talent_e = [
+    #     t_data['icon_url']
+    #     for t_data in talent['list']
+    #     if t_data['attributes'] is not None and
+    #         len(t_data['attributes']) > 0 and
+    #         len(t_data['attributes'][0]['values']) >= 13 and
+    #         any([
+    #             attr['key'] == '元素エネルギー'
+    #             for attr in t_data['attributes']
+    #         ])
+    # ][0]
+    attack_talents = [
         t_data['icon_url']
         for t_data in talent['list']
-        if '通常攻撃' in t_data['key']
-    ][0]
-    talent_s = [
-        t_data['icon_url']
-        for t_data in talent['list']
-        if t_data['attributes'] is not None and
-            len(t_data['attributes']) > 0 and
-            len(t_data['attributes'][0]['values']) >= 13 and
-            not any([
-                attr['key'] == '元素エネルギー'
-                for attr in t_data['attributes']
-            ])
-    ][0]
-    talent_e = [
-        t_data['icon_url']
-        for t_data in talent['list']
-        if t_data['attributes'] is not None and
-            len(t_data['attributes']) > 0 and
-            len(t_data['attributes'][0]['values']) >= 13 and
-            any([
-                attr['key'] == '元素エネルギー'
-                for attr in t_data['attributes']
-            ])
-    ][0]
+        if t_data['attributes'] is not None
+        and len(t_data['attributes']) > 0
+        and len(t_data['attributes'][0]['values']) >= 10
+    ]
     result['talent'] = dict(
-        a=talent_a,
-        s=talent_s,
-        e=talent_e,
+        a=attack_talents[0],
+        s=attack_talents[1],
+        e=attack_talents[2],
     )
     # 命ノ星座アイコン
     affix = [
